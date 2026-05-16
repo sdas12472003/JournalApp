@@ -6,7 +6,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.supanta.JournalApp.Filter.JwtFilter;
 import com.supanta.JournalApp.Service.UserDetailsServiceImpl;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,6 +25,8 @@ public class SpringSecurity {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    private JwtFilter jwtFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -34,7 +38,7 @@ public class SpringSecurity {
             )
             .userDetailsService(userDetailsService)
             .httpBasic(withDefaults());
-
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

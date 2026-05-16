@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.supanta.JournalApp.Enums.Sentiment;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.Entity;
@@ -43,6 +44,7 @@ public class JournalEntry {
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
+    private Sentiment sentiment;
 
     // Instead of using getter setter funcvtion like constructor use lombok it will generate the getter and setter for all property in run time
 

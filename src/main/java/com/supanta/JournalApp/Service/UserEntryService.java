@@ -19,21 +19,22 @@ import com.supanta.JournalApp.Repository.JournalEntryRepo;
 import com.supanta.JournalApp.Repository.UserEntryRepo;
 
 import jakarta.websocket.server.ServerEndpoint;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class UserEntryService {
-    
-    @Autowired// --> This is dependency Injection, We are Injecting Journal Entry Repo in this service class
+
+    @Autowired // --> This is dependency Injection, We are Injecting Journal Entry Repo in this
+               // service class
     private UserEntryRepo userEntryRepo;
-    
 
     private static final Logger logger = LoggerFactory.getLogger(UserEntryService.class);
-    
-    
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    public boolean saveNewUser(User myEntry)
-    {
+
+    public boolean saveNewUser(User myEntry) {
         try {
             myEntry.setPassword(passwordEncoder.encode(myEntry.getPassword()));
             myEntry.setRoles(Arrays.asList("USER"));
@@ -41,12 +42,17 @@ public class UserEntryService {
             return true;
 
         } catch (Exception e) {
-            // TODO: handle exception
+            // logger.info("Error saving user entry: " + e.getMessage());// This is by default
+            // logger.warn("Error saving user entry: " + e.getMessage());// This is by default
+            logger.error("Error occurred for {} :" , myEntry.getUserName(), e);// This is by default and {} is placeholder for the exception object
+            // logger.trace("Error saving user entry: " + e.getMessage());
+            // logger.debug("Error saving user entry: " + e.getMessage());
+            log.error(e.getMessage());// If we use @Slf4j annoptation then we can use log object to log the error message
             return false;
         }
     }
-    public void saveUser(User myEntry)
-    {
+
+    public void saveUser(User myEntry) {
         userEntryRepo.save(myEntry);
     }
 
@@ -61,6 +67,7 @@ public class UserEntryService {
     public void deleteUserEntryById(Long myId) {
         userEntryRepo.deleteById(myId);
     }
+
     public User findByUsername(String username) {
         return userEntryRepo.findByUserName(username);
     }
