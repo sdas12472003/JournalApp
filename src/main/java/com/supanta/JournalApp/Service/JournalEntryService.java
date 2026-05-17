@@ -64,10 +64,14 @@ public class JournalEntryService {
                 throw new RuntimeException("User not found");
             }
 
-            removed = user.getJournalEntries().removeIf(entry -> entry.getId().equals(myId));
-            if (removed) {
-                userService.saveUser(user);
-                journalEntryRepo.deleteById(myId);
+            Optional<JournalEntry> entry = journalEntryRepo.findById(myId);
+
+            if(entry.isPresent()) {
+                JournalEntry journalEntry = entry.get();
+
+                if(journalEntry.getUser().getUserName().equals(userNameString)) {
+                    journalEntryRepo.deleteById(myId);
+                }
             }
 
         } catch (Exception e) {

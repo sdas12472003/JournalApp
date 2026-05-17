@@ -3,6 +3,8 @@ package com.supanta.JournalApp.Utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -11,16 +13,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
+import io.jsonwebtoken.io.Decoders;
+import org.springframework.beans.factory.annotation.Value;
 @Component
 public class JwtUtils {
 
-    // A secure 256-bit (32-byte) secret key required by modern JJWT versions
-    private final String SECRET_KEY = "TaK+TaSE3W9tXm9zWE90S2V5U3VwYW50YURhc0pvdXJuYWxBcHA=";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
-    // Helper method to convert our plain text secret key into a cryptographic SecretKey instance
+    @Value("${jwt.expiration}")
+    private long EXPIRATION;
+
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // Extract the username (Subject) from the token payload
@@ -67,14 +73,14 @@ public class JwtUtils {
                 .subject(subject)
                 .header().empty().add("type", "JWT").and() // Configures standard token type header
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1)) // 10 Hours expiry as defined in video
+                .expiration(new Date(System.currentTimeMillis() +  EXPIRATION)) // 10 Hours expiry as defined in video
                 .signWith(getSigningKey())
                 .compact();
     }
 
     // Validates the token by cross-checking the extracted username and expiration state
-    public Boolean validateToken(String token) {
-        
-        return  !isTokenExpired(token);
+    public Boolean validateToken(String token, UserDetails userDetails) {
+    final String username = extractUsername(token);
+    return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 }

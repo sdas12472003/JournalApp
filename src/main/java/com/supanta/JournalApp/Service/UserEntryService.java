@@ -36,8 +36,11 @@ public class UserEntryService {
 
     public boolean saveNewUser(User myEntry) {
         try {
+            if(userEntryRepo.findByUserName(myEntry.getUserName()) != null) {
+                throw new RuntimeException("Username already exists");
+            }
             myEntry.setPassword(passwordEncoder.encode(myEntry.getPassword()));
-            myEntry.setRoles(Arrays.asList("USER"));
+            myEntry.setRoles(Arrays.asList("ROLE_USER"));
             userEntryRepo.save(myEntry);
             return true;
 

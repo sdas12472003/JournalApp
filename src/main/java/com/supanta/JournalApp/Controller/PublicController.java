@@ -11,15 +11,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.jdk14.JDK14Util;
+import com.supanta.JournalApp.Dto.JwtResponse;
+import com.supanta.JournalApp.Dto.LoginRequest;
 import com.supanta.JournalApp.Entity.User;
 import com.supanta.JournalApp.Service.UserDetailsServiceImpl;
 import com.supanta.JournalApp.Service.UserEntryService;
 import com.supanta.JournalApp.Utils.JwtUtils;
-
+import com.supanta.JournalApp.Dto.JwtResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/public")
+@RequestMapping("/api/auth")
 @Slf4j
 public class PublicController {
     @Autowired
@@ -36,23 +39,23 @@ public class PublicController {
         return "Journal App is running!";
     }
     @PostMapping("signup")
-    public void signup(@RequestBody User myUser)
+    public void signup( @Valid @RequestBody User myUser)
     {
         userEntryService.saveNewUser(myUser);
     }
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody User myUser)
+    public ResponseEntity<?> login(@RequestBody LoginRequest request)
     {
         try
         {
-            authenticationManager.authenticate(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(myUser.getUserName(), myUser.getPassword()));
-            UserDetails userDetail = userDetailsService.loadUserByUsername(myUser.getUserName());
+            authenticationManager.authenticate(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(request.getUserName(), request.getPassword()));
+            UserDetails userDetail = userDetailsService.loadUserByUsername(request.getUserName());
             String jwt=jwtUtil.generateToken(userDetail.getUsername());
-            return new ResponseEntity<>(jwt, org.springframework.http.HttpStatus.OK);
+            return ResponseEntity.ok(new JwtResponse(jwt));
         }
         catch(Exception e)
         {
-            log.error("Login failed for user: " + myUser.getUserName(), e);
+            log.error("Login failed for user: " + request.getUserName(), e);
             throw new RuntimeException("Invalid username or password");
         }
     }

@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,8 @@ public class UserEntryController {
    public UserEntryService userEntryService;
    @Autowired 
    public UserEntryRepo userEntryRepo;
+   @Autowired
+    private PasswordEncoder passwordEncoder;
 
    @GetMapping
    public List<User> getAllUsers()
@@ -57,8 +60,8 @@ public class UserEntryController {
             }
 
             if(user.getPassword() != null) {
-                userInDb.setPassword(user.getPassword());
-            }
+            userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
             userEntryService.saveUser(userInDb);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
